@@ -1,0 +1,17 @@
+{
+  "indexes": [
+    { "collectionGroup": "accessLogs", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "userId", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "accessLogs", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "serviceId", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "accessLogs", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "action", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "adminLogs", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "adminId", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "adminLogs", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "action", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] },
+    { "collectionGroup": "serviceChangeLogs", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "serviceId", "order": "ASCENDING" }, { "fieldPath": "timestamp", "order": "DESCENDING" }] }
+  ],
+  "fieldOverrides": [
+    { "collectionGroup": "accessLogs", "fieldPath": "ttlAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "adminLogs", "fieldPath": "ttlAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "authCodes", "fieldPath": "ttlAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "authSessions", "fieldPath": "ttlAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "loginGuards", "fieldPath": "ttlAt", "ttl": true, "indexes": [] }
+  ]
+}

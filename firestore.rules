@@ -1,0 +1,20 @@
+rules_version = '2';
+
+// PROFCYS Gateway — Firestore 보안 규칙 (22·29장)
+//
+// 모든 업무 데이터(users, services, authSessions, authCodes, accessLogs …)는
+// Apps Script 게이트웨이 API 가 프로젝트 소유자 OAuth 권한으로만 읽고 쓴다.
+// 브라우저(Firebase SDK)에서의 직접 접근은 전부 거부하며,
+// 실시간 갱신 신호인 public/revision 문서(숫자 카운터만 포함, 개인정보·URL 없음)만 읽기를 허용한다.
+// Firebase Auth 사용자도 클라이언트에서 직접 데이터에 접근할 수 없다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /public/revision {
+      allow get: if true;
+      allow list, write: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

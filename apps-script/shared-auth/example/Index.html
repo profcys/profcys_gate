@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <base target="_top" />
+    <?!= ProfcysAuth.clientScript(profcysToken) ?>
+  </head>
+  <body>
+    <h1>업무 서비스</h1>
+    <p id="who"></p>
+    <script>
+      // 기존 google.script.run.xxx() 호출을 PROFCYS.run('xxx', …) 로 바꾸면 토큰이 자동으로 첫 인자로 전달된다.
+      PROFCYS.run('getMyData').then(function (r) {
+        document.getElementById('who').textContent = r.hello;
+      });
+    </script>
+  </body>
+</html>
