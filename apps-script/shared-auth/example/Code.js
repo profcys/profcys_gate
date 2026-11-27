@@ -9,7 +9,8 @@ function doGet(e) {
 }
 
 // 2) 포털은 인증 코드를 POST 로 전달하므로 doPost 도 처리한다.
-//    기존에 doPost 가 있었다면 legacyDoPost_ 로 이름을 바꾸고 세 번째 인자로 넘긴다.
+//    기존에 doPost 가 있었다면 legacyDoPost_ 로 이름을 바꾸고 doPost 의 세 번째 인자로만 넘긴다.
+//    (doGet 에는 넘기지 않는다. off 모드에서 GET 요청이 기존 doPost 로 전달되는 것을 막기 위함)
 function doPost(e) {
   return ProfcysAuth.handle(e, render_ /*, legacyDoPost_ */);
 }

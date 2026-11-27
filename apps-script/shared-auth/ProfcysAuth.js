@@ -162,7 +162,7 @@ var ProfcysAuth = (function () {
     var c = config();
     var params = (e && e.parameter) || {};
     var code = params.profcys_code;
-    if (c.mode === 'off') return code || !fallback ? render(e, null) : fallback(e);
+    if (c.mode === 'off') return (fallback && e && e.postData && !code) ? fallback(e) : render(e, null);
     if (code) {
       var v;
       try { v = verifyCode(code); } catch (err) { v = { ok: false, reason: String(err.message || err).split(':')[0] }; }
