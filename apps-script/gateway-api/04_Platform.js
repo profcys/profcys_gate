@@ -195,7 +195,7 @@ function createFirestoreStore_(projectIdFn) {
     const opts = {
       method: method,
       contentType: 'application/json',
-      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken(), 'X-Goog-User-Project': projectIdFn() },
       muteHttpExceptions: true,
     };
     if (body !== undefined) opts.payload = JSON.stringify(body);
