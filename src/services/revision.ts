@@ -11,6 +11,24 @@ import { config } from '../config/env';
 import { api } from './api';
 
 type Listener = (rev: number) => void;
+type FirebaseWebConfig = { projectId: string; apiKey: string; appId?: string };
+
+/**
+ * 빌드 시 VITE_FIREBASE_* 값이 있으면 그것을, 없으면 Firebase Hosting 이 자동 제공하는 /__/firebase/init.json 을 사용한다.
+ * (Hosting 예약 경로이며 공개 클라이언트 설정만 담긴다. 로컬 개발 서버에서는 없으므로 폴링으로 대체)
+ */
+async function resolveFirebaseConfig(): Promise<FirebaseWebConfig | null> {
+  if (config.firebase.projectId && config.firebase.apiKey) return config.firebase;
+  if (!import.meta.env.PROD) return null;
+  try {
+    const r = await fetch('/__/firebase/init.json', { cache: 'no-store' });
+    if (!r.ok) return null;
+    const j = (await r.json()) as Partial<FirebaseWebConfig>;
+    return j.projectId && j.apiKey ? { projectId: j.projectId, apiKey: j.apiKey, appId: j.appId } : null;
+  } catch {
+    return null;
+  }
+}
 
 export function subscribeRevision(onChange: Listener): () => void {
   let stopped = false;
@@ -23,21 +41,22 @@ export function subscribeRevision(onChange: Listener): () => void {
   };
   let unsub: (() => void) | null = null;
 
-  if (config.firebase.projectId && config.firebase.apiKey) {
-    void (async () => {
-      try {
-        const [{ initializeApp, getApps }, { getFirestore, doc, onSnapshot }] = await Promise.all([import('firebase/app'), import('firebase/firestore')]);
-        const app = getApps()[0] || initializeApp({ projectId: config.firebase.projectId, apiKey: config.firebase.apiKey, appId: config.firebase.appId || undefined });
-        const db = getFirestore(app);
-        if (stopped) return;
-        unsub = onSnapshot(doc(db, 'public', 'revision'), (snap) => emit(Number(snap.get('rev')) || 0), () => startPolling());
-      } catch {
-        startPolling();
-      }
-    })();
-  } else {
-    startPolling();
-  }
+  void (async () => {
+    const fb = await resolveFirebaseConfig();
+    if (!fb) {
+      startPolling();
+      return;
+    }
+    try {
+      const [{ initializeApp, getApps }, { getFirestore, doc, onSnapshot }] = await Promise.all([import('firebase/app'), import('firebase/firestore')]);
+      const app = getApps()[0] || initializeApp({ projectId: fb.projectId, apiKey: fb.apiKey, appId: fb.appId || undefined });
+      const db = getFirestore(app);
+      if (stopped) return;
+      unsub = onSnapshot(doc(db, 'public', 'revision'), (snap) => emit(Number(snap.get('rev')) || 0), () => startPolling());
+    } catch {
+      startPolling();
+    }
+  })();
 
   function startPolling() {
     if (timer || stopped) return;

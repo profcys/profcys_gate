@@ -18,6 +18,15 @@
 function checkConfiguration() {
   const props = PropertiesService.getScriptProperties();
   const report = [];
+  if (props.getProperty('FIREBASE_PROJECT_ID') && !props.getProperty('FIREBASE_WEB_API_KEY')) {
+    try {
+      const key = discoverFirebaseWebApiKey_(props.getProperty('FIREBASE_PROJECT_ID'));
+      props.setProperty('FIREBASE_WEB_API_KEY', key);
+      report.push('ℹ FIREBASE_WEB_API_KEY 를 Firebase 웹 앱 설정에서 자동으로 가져왔습니다.');
+    } catch (e) {
+      report.push('✘ FIREBASE_WEB_API_KEY 자동 조회 실패: ' + e.message + ' (Firebase 콘솔에서 웹 앱을 등록했는지 확인하세요)');
+    }
+  }
   ['FIREBASE_PROJECT_ID', 'FIREBASE_WEB_API_KEY'].forEach(function (k) {
     report.push((props.getProperty(k) ? '✔ ' : '✘ ') + k + (props.getProperty(k) ? '' : ' 가 설정되지 않았습니다.'));
   });
@@ -141,4 +150,23 @@ function installMaintenanceTriggers() {
   ScriptApp.newTrigger('exportStatsToSheet').timeBased().everyDays(1).atHour(4).inTimezone(PROFCYS.TIMEZONE).create();
   ScriptApp.newTrigger('exportBackupToSheet').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(5).inTimezone(PROFCYS.TIMEZONE).create();
   console.log('트리거 설치 완료: 매일 03시 정리, 04시 통계 내보내기, 매주 월요일 05시 백업 (한국시간)');
+}
+
+/**
+ * Firebase 웹 앱 설정(공개 클라이언트 값)에서 Web API Key 를 조회한다. 소유자 OAuth 토큰으로 Firebase Management API 를 호출.
+ * 키를 사람이 복사·붙여넣기하지 않아도 되도록 checkConfiguration() 이 속성이 비어 있을 때 사용한다.
+ */
+function discoverFirebaseWebApiKey_(projectId) {
+  const headers = { Authorization: 'Bearer ' + ScriptApp.getOAuthToken(), 'X-Goog-User-Project': projectId };
+  const get = function (url) {
+    const res = UrlFetchApp.fetch(url, { headers: headers, muteHttpExceptions: true });
+    if (res.getResponseCode() !== 200) throw new Error('HTTP ' + res.getResponseCode() + ' ' + res.getContentText().substring(0, 200));
+    return JSON.parse(res.getContentText());
+  };
+  const base = 'https://firebase.googleapis.com/v1beta1/projects/' + encodeURIComponent(projectId);
+  const apps = (get(base + '/webApps').apps || []).filter(function (a) { return a.state !== 'DELETED'; });
+  if (!apps.length) throw new Error('등록된 웹 앱이 없습니다.');
+  const cfg = get(base + '/webApps/' + encodeURIComponent(apps[0].appId) + '/config');
+  if (!cfg.apiKey) throw new Error('웹 앱 설정에 apiKey 가 없습니다.');
+  return cfg.apiKey;
 }
