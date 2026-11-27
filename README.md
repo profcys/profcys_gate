@@ -2,7 +2,7 @@
 
 **PROFCYS Integrated Business Support Platform.** 아이디·비밀번호 하나로 PROFCYS의 업무 서비스(Apps Script 웹앱 등)를 권한에 따라 이용하는 통합 포털입니다.
 
-- 대표 주소(예정): `https://profcys.web.app` (Firebase 무료 기본 도메인)
+- 대표 주소(운영 중): `https://profcys.web.app` (Firebase 프로젝트 `profcys-2907e`의 무료 Hosting 사이트 `profcys`, 2026-11-27 배포)
 - 상태: **배포 준비 완료 (미배포)**. 실제 Firebase 프로젝트 배포와 기존 Apps Script 연동은 [설치·배포 가이드](docs/02-설치-배포-가이드.md)에 따라 소유자 계정으로 진행해야 합니다.
 - 운영비: **월 0원 구조** (Firebase Spark + Google Apps Script). 결제 계정·유료 API를 사용하지 않습니다.
 
